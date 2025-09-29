@@ -19,7 +19,7 @@
 				"header": [
 					{
 						"key": "Authorization",
-						"value": "Token 70be385ab924545a9c40794de09d6e16646ff44d ",
+						"value": "Token xxxxxxxxxxxxx",
 						"type": "text"
 					}
 				],
@@ -57,7 +57,7 @@
 				"header": [
 					{
 						"key": "Authorization",
-						"value": "Token 70be385ab924545a9c40794de09d6e16646ff44d ",
+						"value": "Token xxxx ",
 						"type": "text"
 					}
 				],
@@ -87,7 +87,7 @@
 				"header": [
 					{
 						"key": "Authorization",
-						"value": "Token 70be385ab924545a9c40794de09d6e16646ff44d ",
+						"value": "Token xxxx ",
 						"type": "text"
 					}
 				],
