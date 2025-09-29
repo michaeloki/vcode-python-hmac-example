@@ -1,0 +1,1885 @@
+{
+	"info": {
+		"_postman_id": "03dc8218-5a22-49ed-9c34-ca3bd917d85f",
+		"name": "VAS Profile Management Flows V1",
+		"description": "# Supported flows\n\n1. Initialization flow (MUST be redone on each BANK_USER_ID value change):\n    1. Emulates backend request to get access token, using internal JWT\n    2. Emulates fronted exchanging access token for session token  \n        \n2. Display flow\n    1. Should be executed with session token stored as a result of initialization flow\n    2. Requests linked accounts for the user\n3. Linking flow: **Not implemented yet**\n4. Unlinking flow: **Not implemented yet**",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33212892"
+	},
+	"item": [
+		{
+			"name": "Initialization flow",
+			"item": [
+				{
+					"name": "1.a [ACC/EXT/PROD] Request redirect url with access token through BAG",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Check that the session was succesfully created",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Extract the redirectUrl",
+									"var jsonData = pm.response.json();",
+									"var redirectUrl = jsonData.redirectUrl.href;",
+									"",
+									"// Check that URL was included in the response",
+									"pm.test(\"Response contains redirect URL\", function () {",
+									"   pm.expect(redirectUrl).to.exist; ",
+									"});",
+									"",
+									"// Use a regular expression to extract the access token from the URL",
+									"var accessToken = redirectUrl.match(/https?:\\/\\/[^\\/]+\\/spa\\/vas-profile-management\\/(.*)/)[1];",
+									"",
+									"// Check that URL contains access token",
+									"pm.test(\"URL contains access token\", function () {",
+									"   pm.expect(accessToken).to.exist; ",
+									"});",
+									"",
+									"// Save the access token to the environment variable ACCESS_TOKEN",
+									"console.log(`Saved new access token:  ${accessToken}`)",
+									"pm.environment.set(\"ACCESS_TOKEN\", accessToken);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"if (!environment['BANK_USER_ID']) {",
+									"    throw new Error('BANK_USER_ID is undefined. Perhaps you are running in LOCAL env? Than use 1.b to get access token')",
+									"}",
+									"",
+									"var bankUserId = pm.environment.get(\"BANK_USER_ID\");",
+									"",
+									"pm.environment.set(\"BAG_REQUEST_BODY\",",
+									"    JSON.stringify({",
+									"        \"bankUserId\": bankUserId.toString()",
+									"    }));",
+									"",
+									"pm.environment.set(\"BAG_REQUEST_PATH\", \"profiles\");",
+									"pm.environment.set(\"BAG_REQUEST_ID\", \"12345\");",
+									"",
+									"let utils = eval(environment.utils)();",
+									"utils.sign.generateSignature(bankUserId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Signature",
+								"value": "{{SIGNATURE}}",
+								"type": "text"
+							},
+							{
+								"key": "X-Request-Id",
+								"value": "{{BAG_REQUEST_ID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{BAG_REQUEST_BODY}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BAG_BASE_URL}}{{BAG_VERSION}}{{BAG_REQUEST_PATH}}",
+							"host": [
+								"{{BAG_BASE_URL}}{{BAG_VERSION}}{{BAG_REQUEST_PATH}}"
+							]
+						},
+						"description": "Uses JWT environmental variable for authorizarion via Bearer header.\n\nEstablishes session for the specified BANK_USER_ID and saves access token for it into ACCESS_TOKEN environment variable"
+					},
+					"response": [
+						{
+							"name": "Successfully created new session",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"sessionRequestId\": \"{{BANK_USER_ID}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BAG_BASE_URL}}{{BAG_VERSION}}{{BAG_REQUEST_PATH}}",
+									"host": [
+										"{{BAG_BASE_URL}}{{BAG_VERSION}}{{BAG_REQUEST_PATH}}"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 02 Aug 2023 04:17:55 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"redirectUrl\": {\n        \"href\": \"https://payconiq.com/spa/vas-profile-management/eyJraWQiOiJraWQxIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJQUk9GSUxFOis4aU0zY0FiWEVhRVRDZHZtRnd0NmVvRXVaanQ4d2hXQ2Q5SVVGU1B4T2s9IiwiZXhwIjoxNjkwOTQ5OTM1LCJqdGkiOiI0NGFlN2FlZS05YjIzLTQyNTMtYjRlOS03ZDZjY2VkMmZmMTIiLCJhdXRob3JpdGllcyI6WyJQUk9GSUxFX0FVVEhFTlRJQ0FUSU9OX1BBR0UiXX0.QU3Do0ZleD5Ncq2C61RlzNcIwPjs7WnvdncXFt6rh8k6QNaQRKkmG9rBMQv6dq1ytXQ2rnjyuCliMq1aziz0ibIsfvO2W5ZUjNg9HPb4RlmzcX9ycWCIWGHGRQPVreyybW6zWX5SVgWhowgK66hMloiqg3ikBkJIR3cbWc9wZV8dMC-CAsCzdPzlhKe4zqVY830n4CeYlfhWDbH5Cj5Dmj1MfUwfMnADWxzCf38ajfDjuabYe02FxXwGggGcRXri_QGUcF1fG57yMx9PnzIEE3xf9_SvytqvdR8WH7zIHvdpbmbFIWMct4BdQc-4oVmljd41qKWLNJdhkAN_g428Kg\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "1.b [LOCAL] Directly request redirect url with access token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Check that the session was succesfully created",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Extract the redirectUrl",
+									"var jsonData = pm.response.json();",
+									"var redirectUrl = jsonData.redirectUrl.href;",
+									"",
+									"// Check that URL was included in the response",
+									"pm.test(\"Response contains redirect URL\", function () {",
+									"   pm.expect(redirectUrl).to.exist; ",
+									"});",
+									"",
+									"// Use a regular expression to extract the access token from the URL",
+									"var accessToken = redirectUrl.match(/https:\\/\\/payconiq.com\\/spa\\/vas-profile-management\\/(.*)/)[1];",
+									"",
+									"// Check that URL contains access token",
+									"pm.test(\"URL contains access token\", function () {",
+									"   pm.expect(accessToken).to.exist; ",
+									"});",
+									"",
+									"// Save the access token to the environment variable ACCESS_TOKEN",
+									"console.log(`Saved new access token:  ${accessToken}`)",
+									"pm.environment.set(\"ACCESS_TOKEN\", accessToken);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"if (!environment['BANK_USER_ID_WITH_BANK']) {",
+									"    throw new Error('BANK_USER_ID_WITH_BANK is undefined. Perhaps you are running NOT in LOCAL env? Than use 1.a to get access token via BAG')",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"sessionRequestId\": \"{{BANK_USER_ID_WITH_BANK}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}{{INTERNAL_API}}/profiles/session",
+							"host": [
+								"{{BASE_URL}}{{INTERNAL_API}}"
+							],
+							"path": [
+								"profiles",
+								"session"
+							]
+						},
+						"description": "Uses JWT environmental variable for authorizarion via Bearer header.\n\nEstablishes session for the specified BANK_USER_ID and saves access token for it into ACCESS_TOKEN environment variable"
+					},
+					"response": [
+						{
+							"name": "Successfully created new session",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"sessionRequestId\": \"{{BANK_USER_ID}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}{{INTERNAL_API}}/profiles/session",
+									"host": [
+										"{{BASE_URL}}{{INTERNAL_API}}"
+									],
+									"path": [
+										"profiles",
+										"session"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 02 Aug 2023 04:17:55 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"redirectUrl\": {\n        \"href\": \"https://payconiq.com/spa/vas-profile-management/eyJraWQiOiJraWQxIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJQUk9GSUxFOis4aU0zY0FiWEVhRVRDZHZtRnd0NmVvRXVaanQ4d2hXQ2Q5SVVGU1B4T2s9IiwiZXhwIjoxNjkwOTQ5OTM1LCJqdGkiOiI0NGFlN2FlZS05YjIzLTQyNTMtYjRlOS03ZDZjY2VkMmZmMTIiLCJhdXRob3JpdGllcyI6WyJQUk9GSUxFX0FVVEhFTlRJQ0FUSU9OX1BBR0UiXX0.QU3Do0ZleD5Ncq2C61RlzNcIwPjs7WnvdncXFt6rh8k6QNaQRKkmG9rBMQv6dq1ytXQ2rnjyuCliMq1aziz0ibIsfvO2W5ZUjNg9HPb4RlmzcX9ycWCIWGHGRQPVreyybW6zWX5SVgWhowgK66hMloiqg3ikBkJIR3cbWc9wZV8dMC-CAsCzdPzlhKe4zqVY830n4CeYlfhWDbH5Cj5Dmj1MfUwfMnADWxzCf38ajfDjuabYe02FxXwGggGcRXri_QGUcF1fG57yMx9PnzIEE3xf9_SvytqvdR8WH7zIHvdpbmbFIWMct4BdQc-4oVmljd41qKWLNJdhkAN_g428Kg\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "2. Exchange access token for session otken",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Check that the token was succesfully exchanged",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.test('Check that session cookie is set', function() {",
+									"        pm.expect(pm.cookies.has(\"Authorization\")).to.be.true;",
+									"        console.log(\"Succesfully exchanged access token for session cookie.\")",
+									"    });",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/auth",
+							"host": [
+								"{{BASE_URL}}{{FRONTEND_API}}"
+							],
+							"path": [
+								"profiles",
+								"auth"
+							]
+						},
+						"description": "Exchanges access token saved in ACCESS_TOKEN variable for the sesion token in 'Authorization' cookie. Attempts to exchange same token again would result in 403. Session cookie is automatically attached to all Postman requests in the same domain."
+					},
+					"response": [
+						{
+							"name": "Successfully exchanged access token for the session cookie",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/auth",
+									"host": [
+										"{{BASE_URL}}{{FRONTEND_API}}"
+									],
+									"path": [
+										"profiles",
+										"auth"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "plain",
+							"header": [
+								{
+									"key": "Set-Cookie",
+									"value": "Authorization=eyJraWQiOiJraWQxIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJQUk9GSUxFOis4aU0zY0FiWEVhRVRDZHZtRnd0NmVvRXVaanQ4d2hXQ2Q5SVVGU1B4T2s9IiwiZXhwIjoxNjkwOTUwMTc3LCJqdGkiOiJmZjRmNTk0MS1lYjQzLTQyOWUtYmU1Zi1mZWQxYjMzM2JjNDQiLCJhdXRob3JpdGllcyI6WyJQUk9GSUxFX01BTkFHRU1FTlRfUEFHRSJdfQ.TwB5585OGsfca6445PABmp6wbevH56ZVyoFLXZKCuz-XudLib7fZOC4HR6KTGHir3ta4a3o1T0tcGNEvcdB1N80zwxR-jS-eIeXbmPwP7WvgZfO2WHYFr02-CjNE_JfDY-AzfzTylCuGIAv1iYRVBxE5mYL3KOFv2UAZCYKM16MwU6M7Zfs3-nYljrxsQhs1JJx8SnxhJ88lKRy1Rh6PI0cC8rJUlzG3Ar4xKnWA-1Qg2_IkzgDpaCwRkBGUEr21B2un1ueTppk8oy-7qNllILrGAoLsMUnO_fxFpKmFzZwHfgozTIYF5Uq5VnrBfbp__BzeP7KoG6fh_SlzhurQxg; Path=/; Max-Age=300; Expires=Wed, 02 Aug 2023 04:22:57 GMT; Secure; HttpOnly"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Length",
+									"value": "0"
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 02 Aug 2023 04:17:57 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			],
+			"description": "First flow, that needs to be executed before any other request. Receives an access token as part of redirect URL in one of two ways:\n\n- Either directly from BFF, sending BANK_USER_ID_WITH_BANK and using provided JWT in environment for authorization, emulating backend service, like BAG. This approach is suitable for Local runs.\n- Or through BAG, sending BANK_USER_ID (bank would be added by BAG) and using JWS from JWS generator for authorization, thus emulating bankapp. This approach is suitable for ACC.\n    \n\nAcces token than exchanged for session cookie (emulating SPA loaded from that URL). Session cookie is necessary to authorise any requests in next flows.\n\n**Important:** if you change the BANK_USER_ID or BANK_USER_ID_WITH_BANK environmental variable, than you would need to redo this flow to establish session with the new bank user ID."
+		},
+		{
+			"name": "Display flow",
+			"item": [
+				{
+					"name": "1. Get linked account",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/linked-account",
+							"host": [
+								"{{BASE_URL}}{{FRONTEND_API}}"
+							],
+							"path": [
+								"profiles",
+								"linked-account"
+							]
+						},
+						"description": "Attemps to get linked VAS account data. Authorization is done via session cookie.\n\nResult of 200 means, that linked account exists and its data is included in response\n\nResult of 404 means, that no account is linked for given user."
+					},
+					"response": [
+						{
+							"name": "Linked account found",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/linked-account",
+									"host": [
+										"{{BASE_URL}}{{FRONTEND_API}}"
+									],
+									"path": [
+										"profiles",
+										"linked-account"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 02 Aug 2023 04:08:03 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"linkedAccounts\": [\n        {\n            \"scheme\": {\n                \"id\": \"BEL_MEAL_VOUCHER\",\n                \"brandName\": \"Meal Voucher in Belgium\",\n                \"brandLogo\": \"http://test.test/brand_logo.png\"\n            },\n            \"provider\": {\n                \"id\": \"BEL_MONIZZE\",\n                \"name\": \"MONIZZE BELGIUM\",\n                \"logo\": \"http://test.test/provider_logo.png\",\n                \"active\": true\n            },\n            \"account\": {\n                \"accountId\": \"507f1f77bcf86cd799439011\",\n                \"providerAccountId\": \"MONIZZE_123456789\",\n                \"vasAccountName\": \"My account!\"\n            },\n            \"balanceCents\": 0,\n            \"active\": true,\n            \"inactiveReason\": \"INSUFFICIENT_FUNDS\"\n        }\n    ]\n}"
+						},
+						{
+							"name": "Linked account NOT found",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/linked-account",
+									"host": [
+										"{{BASE_URL}}{{FRONTEND_API}}"
+									],
+									"path": [
+										"profiles",
+										"linked-account"
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 02 Aug 2023 04:18:04 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": \"PROFILE_NOT_FOUND\",\n    \"message\": \"No linked VAS profile was found for bank user\",\n    \"category\": null\n}"
+						}
+					]
+				}
+			],
+			"description": "Flow that emulates SPA trying to load already linked voucher account for the user. Response of 200 means, that account was found and returned. Response of 404 means, that no account is currently linked for the user."
+		},
+		{
+			"name": "Linking flow",
+			"item": [
+				{
+					"name": "1. Get voucher providers list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/providers",
+							"host": [
+								"{{BASE_URL}}{{FRONTEND_API}}"
+							],
+							"path": [
+								"profiles",
+								"providers"
+							]
+						},
+						"description": "Attemps to get list of voucher providers available for the user. Authorization is done via session cookie.\n\nResult of 200 means, that list of providers was retreived and is included into response"
+					},
+					"response": [
+						{
+							"name": "Successfully retrieved voucher providers list",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/providers",
+									"host": [
+										"{{BASE_URL}}{{FRONTEND_API}}"
+									],
+									"path": [
+										"profiles",
+										"providers"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 11 Aug 2023 12:45:37 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"providers\": [\n        {\n            \"provider\": {\n                \"id\": \"BEL_MONIZZE\",\n                \"name\": \"MONIZZE BELGIUM\",\n                \"logo\": \"http://test.test/provider_logo.png\",\n                \"active\": true\n            },\n            \"schemes\": [\n                {\n                    \"id\": \"BEL_MEAL_VOUCHER\",\n                    \"brandName\": \"Meal Voucher in Belgium\",\n                    \"brandLogo\": \"http://test.test/brand_logo.png\"\n                }\n            ]\n        },\n        {\n            \"provider\": {\n                \"id\": \"NL_SODEXO\",\n                \"name\": \"SODEXO NETHERLANDS\",\n                \"logo\": \"http://test.test/other_provider_logo.png\",\n                \"active\": true\n            },\n            \"schemes\": [\n                {\n                    \"id\": \"NL_MEAL_VOUCHER\",\n                    \"brandName\": \"Meal Voucher in Netherlands\",\n                    \"brandLogo\": \"http://test.test/other_brand_logo.png\"\n                }\n            ]\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "2. Start linking account",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"provider\": \"{{PROVIDER}}\",\n    \"scheme\": \"{{SCHEME}}\",\n    \"languageTag\": \"{{LANGUAGE_TAG}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/linked-account",
+							"host": [
+								"{{BASE_URL}}{{FRONTEND_API}}"
+							],
+							"path": [
+								"profiles",
+								"linked-account"
+							]
+						},
+						"description": "Sends selected provider to BFF and receives authentication URL for that provider in response\n\nResult of 200 means, that linking was started succesfully and contains provider authorization url.\n\nResult of 404 means, that either specified provider is not available for given user or specified scheme is not available for the given user under given provider.\n\nResult of 422 is currently returned, when user, that has account linked tries to link another one, emulating VAS error on repeated link of same scheme. (Actual VAS allows linking of different schemes, but mock is not smart enough)"
+					},
+					"response": [
+						{
+							"name": "Empty provider in request",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"provider\": \"\",\n    \"scheme\": \"{{SCHEME}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/linked-account",
+									"host": [
+										"{{BASE_URL}}{{FRONTEND_API}}"
+									],
+									"path": [
+										"profiles",
+										"linked-account"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 04 Aug 2023 03:43:56 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": \"FIELD_IS_REQUIRED\",\n    \"message\": \"scheme-provider info required to link user\",\n    \"category\": null\n}"
+						},
+						{
+							"name": "Provider not found",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"provider\": \"NOT A PROVIDER ID\",\n    \"scheme\": \"{{SCHEME}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/linked-account",
+									"host": [
+										"{{BASE_URL}}{{FRONTEND_API}}"
+									],
+									"path": [
+										"profiles",
+										"linked-account"
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 11 Aug 2023 12:46:31 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": \"PROVIDER_NOT_FOUND\",\n    \"message\": \"Provider to be linked to account profile could not be found for the bankapp user\",\n    \"category\": null\n}"
+						},
+						{
+							"name": "Scheme not found",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"provider\": \"BEL_MONIZZE\",\n    \"scheme\": \"NOT A SCHEME\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/linked-account",
+									"host": [
+										"{{BASE_URL}}{{FRONTEND_API}}"
+									],
+									"path": [
+										"profiles",
+										"linked-account"
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 11 Aug 2023 12:48:34 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": \"SCHEME_NOT_FOUND\",\n    \"message\": \" Scheme to be linked to account profile could not be found for the specified provider and the bankapp user\",\n    \"category\": null\n}"
+						},
+						{
+							"name": "Linking started successfully with a scheme and language",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"provider\": \"BEL_MONIZZE\",\n    \"scheme\": \"BEL_MEAL_VOUCHER\",\n    \"languageTag\": \"en-US\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/linked-account",
+									"host": [
+										"{{BASE_URL}}{{FRONTEND_API}}"
+									],
+									"path": [
+										"profiles",
+										"linked-account"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Method"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Headers"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 22 Aug 2023 11:15:31 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"providerUrl\": \"https://auth.monizze.demo/en-US/oauth/authorize\"\n}"
+						},
+						{
+							"name": "Linking started successfully without a scheme",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"provider\": \"BEL_MONIZZE\",\n    \"languageTag\": \"en-US\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/linked-account",
+									"host": [
+										"{{BASE_URL}}{{FRONTEND_API}}"
+									],
+									"path": [
+										"profiles",
+										"linked-account"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Method"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Headers"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 22 Aug 2023 11:16:13 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"providerUrl\": \"https://auth.monizze.demo/en-US/oauth/authorize\"\n}"
+						},
+						{
+							"name": "Linking started successfully without a language",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"provider\": \"BEL_MONIZZE\",\n    \"scheme\": \"BEL_MEAL_VOUCHER\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/linked-account",
+									"host": [
+										"{{BASE_URL}}{{FRONTEND_API}}"
+									],
+									"path": [
+										"profiles",
+										"linked-account"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Method"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Headers"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 22 Aug 2023 11:16:42 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"providerUrl\": \"https://auth.monizze.demo/en-US/oauth/authorize\"\n}"
+						},
+						{
+							"name": "Linking started successfully without a scheme and a language",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"provider\": \"BEL_MONIZZE\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/linked-account",
+									"host": [
+										"{{BASE_URL}}{{FRONTEND_API}}"
+									],
+									"path": [
+										"profiles",
+										"linked-account"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Method"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Headers"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 22 Aug 2023 11:16:58 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"providerUrl\": \"https://auth.monizze.demo/en-US/oauth/authorize\"\n}"
+						},
+						{
+							"name": "Scheme from different provider",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"provider\": \"BEL_MONIZZE\",\n    \"scheme\": \"NL_MEAL_VOUCHER\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/linked-account",
+									"host": [
+										"{{BASE_URL}}{{FRONTEND_API}}"
+									],
+									"path": [
+										"profiles",
+										"linked-account"
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 11 Aug 2023 12:50:50 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": \"SCHEME_NOT_FOUND\",\n    \"message\": \" Scheme to be linked to account profile could not be found for the specified provider and the bankapp user\",\n    \"category\": null\n}"
+						},
+						{
+							"name": "Same scheme already linked",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"provider\": \"BEL_MONIZZE\",\n    \"scheme\": \"BEL_MEAL_VOUCHER\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/linked-account",
+									"host": [
+										"{{BASE_URL}}{{FRONTEND_API}}"
+									],
+									"path": [
+										"profiles",
+										"linked-account"
+									]
+								}
+							},
+							"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 11 Aug 2023 12:52:09 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": \"FAILED_TO_LINK_PROFILE\",\n    \"message\": \"Failed to start linking voucher provider account\",\n    \"category\": null\n}"
+						}
+					]
+				},
+				{
+					"name": "3. Finish linking account",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"provider\": \"{{PROVIDER}}\",\n    \"scheme\": \"{{SCHEME}}\",\n    \"authorizationCode\": {{AUTH_CODE}}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/authorize",
+							"host": [
+								"{{BASE_URL}}{{FRONTEND_API}}"
+							],
+							"path": [
+								"profiles",
+								"authorize"
+							]
+						},
+						"description": "Sends selected provider and authorization code for its account to BFF and receives linked account in response\n\nResult of 200 means, that linking was completed succesfully and contains linked accound. Currently returned for Monizzo provider\n\nResult of 422 means, that linking failed (wrong authorization code or wrong comination of provider + scheme, etc). Currently returned for Sodexo provider"
+					},
+					"response": [
+						{
+							"name": "Successfull linking for Monizze",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"provider\": \"BEL_MONIZZE\",\n    \"scheme\": \"BEL_MEAL_VOUCHER\",\n    \"authorizationCode\": 12345\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1:8080/v1/bff/profiles/authorize",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"bff",
+										"profiles",
+										"authorize"
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "plain",
+							"header": [
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Method"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Headers"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 18 Aug 2023 13:50:58 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Failed linking for Sodexo",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"provider\": \"NL_SODEXO\",\n    \"scheme\": \"{{SCHEME}}\",\n    \"authorizationCode\": {{AUTH_CODE}}\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/authorize",
+									"host": [
+										"{{BASE_URL}}{{FRONTEND_API}}"
+									],
+									"path": [
+										"profiles",
+										"authorize"
+									]
+								}
+							},
+							"status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Method"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Headers"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 18 Aug 2023 13:51:34 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": \"ACCOUNT_AUTHORIZATION_FAILED\",\n    \"message\": \"Voucher provider account authorization failed.\",\n    \"category\": null\n}"
+						},
+						{
+							"name": "Unavailable for every other provider",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"provider\": \"OTHER_PROVIDER\",\n    \"scheme\": \"{{SCHEME}}\",\n    \"authorizationCode\": {{AUTH_CODE}}\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/authorize",
+									"host": [
+										"{{BASE_URL}}{{FRONTEND_API}}"
+									],
+									"path": [
+										"profiles",
+										"authorize"
+									]
+								}
+							},
+							"status": "Service Unavailable",
+							"code": 503,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Method"
+								},
+								{
+									"key": "Vary",
+									"value": "Access-Control-Request-Headers"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 17 Aug 2023 06:48:03 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": \"SERVICE_UNAVAILABLE\",\n    \"message\": \"Upstream service not available\",\n    \"category\": null\n}"
+						}
+					]
+				}
+			],
+			"description": "Flow that emulates SPA going through account linking process. Consist of multiple requests:\n\n1. Obtaining list of providers from BFF to display to user to make selection from.\n2. Selecting one of them and starting account linking, receiving authentication URL for that provider in response\n3. Returning back to BFF after succesfull authentication to finish account linking"
+		},
+		{
+			"name": "Unlinking flow",
+			"item": [
+				{
+					"name": "1. Unlink account",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/linked-account",
+							"host": [
+								"{{BASE_URL}}{{FRONTEND_API}}"
+							],
+							"path": [
+								"profiles",
+								"linked-account"
+							]
+						},
+						"description": "Attemps to unlink linked VAS account data. Authorization is done via session cookie.\n\nResult of 204 means, that linked account was unlinked\n\nResult of 404 means, that no account is linked for given user, thus unlinking is impossible.\n\nResult of 422 means, that unlinking failed and should be reattempted later."
+					},
+					"response": [
+						{
+							"name": "Linked account NOT found",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}{{FRONTEND_API}}/profiles/linked-account",
+									"host": [
+										"{{BASE_URL}}{{FRONTEND_API}}"
+									],
+									"path": [
+										"profiles",
+										"linked-account"
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 04 Aug 2023 03:44:46 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": \"PROFILE_NOT_FOUND\",\n    \"message\": \"No linked VAS profile was found for bank user\",\n    \"category\": null\n}"
+						}
+					]
+				}
+			],
+			"description": "Flow, that emulates SPA unlinknig voucher account from the user. Consists of single request. On success, SPA supposed to initiate linking process immediately."
+		}
+	]
+}

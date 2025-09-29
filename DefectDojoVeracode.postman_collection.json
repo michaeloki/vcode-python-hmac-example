@@ -1,0 +1,160 @@
+{
+	"info": {
+		"_postman_id": "3a2abe15-378f-452f-afef-dd7dd7610695",
+		"name": "DefectDojoVeracode",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33212892"
+	},
+	"item": [
+		{
+			"name": "getUsers",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token 70be385ab924545a9c40794de09d6e16646ff44d ",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"\":\"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://test-ds.systems.payconiq.zone/api/v2/users",
+					"protocol": "https",
+					"host": [
+						"test-ds",
+						"systems",
+						"payconiq",
+						"zone"
+					],
+					"path": [
+						"api",
+						"v2",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "uploadData",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token 70be385ab924545a9c40794de09d6e16646ff44d ",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://test-ds.systems.payconiq.zone/api/v2/import-scan/",
+					"protocol": "https",
+					"host": [
+						"test-ds",
+						"systems",
+						"payconiq",
+						"zone"
+					],
+					"path": [
+						"api",
+						"v2",
+						"import-scan",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getEngagements",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token 70be385ab924545a9c40794de09d6e16646ff44d ",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}v2/engagements/",
+					"host": [
+						"{{baseUrl}}v2"
+					],
+					"path": [
+						"engagements",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "createEngagement",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}v2/engagements/?name=engagement1&tags=[\"testing\"]&target_start=2024-10-30&target_end=2024-11-01&product=test-app&status=Completed",
+					"host": [
+						"{{baseUrl}}v2"
+					],
+					"path": [
+						"engagements",
+						""
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "engagement1"
+						},
+						{
+							"key": "tags",
+							"value": "[\"testing\"]"
+						},
+						{
+							"key": "target_start",
+							"value": "2024-10-30"
+						},
+						{
+							"key": "target_end",
+							"value": "2024-11-01"
+						},
+						{
+							"key": "product",
+							"value": "test-app"
+						},
+						{
+							"key": "status",
+							"value": "Completed"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getProductTypes",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}

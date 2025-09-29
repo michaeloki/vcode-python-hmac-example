@@ -1,0 +1,1456 @@
+{
+	"info": {
+		"_postman_id": "87ad41ff-82c3-4221-a898-3e4f4c3a69ae",
+		"name": "iDEAL Issuer API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33212892"
+	},
+	"item": [
+		{
+			"name": "Transaction Processing",
+			"item": [
+				{
+					"name": "Identify transaction",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var cit = _.random(1000000000, 9999999999);",
+									"pm.collectionVariables.set(\"cit\", cit);",
+									"",
+									"var payloadUri = pm.globals.get(\"transactionPayloadUri\");",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify({",
+									"    source: \"QRCODE\",",
+									"    payloadUri: payloadUri,",
+									"    citType: \"TRANSIENT\"",
+									"}));",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_PATH\", \"/v2/transactions/identify\");",
+									"pm.collectionVariables.set(\"REQUEST_ID\", \"test_12345\");",
+									"pm.collectionVariables.set(\"ISSUER\", \"PYCQNL20ABC\");",
+									"",
+									"let utils = eval(pm.environment.get(\"utils\"))();",
+									"utils.sign.generateSignature(cit);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"The transaction has been identified\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"var jsonData = pm.response.json();",
+									"pm.globals.set(\"transactionIdentifier\", jsonData.transactionId);",
+									"pm.globals.set(\"transactionDetails\", jsonData);",
+									"console.log(\"registrationAction is \" + jsonData.debtor.userProfileMetadata.registrationAction)",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Signature",
+								"value": "{{SIGNATURE}}",
+								"type": "text"
+							},
+							{
+								"key": "Request-ID",
+								"value": "{{REQUEST_ID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{REQUEST_BODY}}"
+						},
+						"url": {
+							"raw": "{{ISSUER_API_BASE_PATH}}/transactions/identify",
+							"host": [
+								"{{ISSUER_API_BASE_PATH}}"
+							],
+							"path": [
+								"transactions",
+								"identify"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Anonymous Identify transaction",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var issuerId = _.random(1000000, 3100000);",
+									"pm.collectionVariables.set(\"issuerId\", issuerId);",
+									"",
+									"var payloadUri = pm.globals.get(\"transactionPayloadUri\");",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify({",
+									"    source: \"QRCODE\",",
+									"    payloadUri: payloadUri,",
+									"}));",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_PATH\", \"/v2/transactions/anonymous-identify\");",
+									"pm.collectionVariables.set(\"REQUEST_ID\", \"test_12345\");",
+									"pm.collectionVariables.set(\"ISSUER\", \"PYCQNL20ABC\");",
+									"",
+									"let utils = eval(pm.environment.get(\"utils\"))();",
+									"utils.sign.generateSignature(\"UNKNOWN\");",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"The transaction has been anonymously identified\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Signature",
+								"value": "{{SIGNATURE}}",
+								"type": "text"
+							},
+							{
+								"key": "Request-ID",
+								"value": "{{REQUEST_ID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{REQUEST_BODY}}"
+						},
+						"url": {
+							"raw": "{{ISSUER_API_BASE_PATH}}/transactions/anonymous-identify",
+							"host": [
+								"{{ISSUER_API_BASE_PATH}}"
+							],
+							"path": [
+								"transactions",
+								"anonymous-identify"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Confirm transaction",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var subjectId = pm.collectionVariables.get(\"cit\");",
+									"var transactionDetails = pm.globals.get(\"transactionDetails\");",
+									"",
+									"var amountNew = {",
+									"    guaranteedAmount: transactionDetails.amount.amount,",
+									"    currency: transactionDetails.amount.currency",
+									"};",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify({",
+									"    creditor: transactionDetails.creditor,",
+									"    amount:  amountNew,",
+									"    debtor: {",
+									"        name: \"John\",",
+									"        iban: \"NL91ABNA0417164300\",",
+									"        bic: \"ABNANL2A\"",
+									"    }",
+									"}));",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_PATH\", \"/v2/transactions/\" + pm.variables.get(\"transactionIdentifier\") + \"/confirm\");",
+									"pm.collectionVariables.set(\"REQUEST_ID\", \"test_12345\");",
+									"pm.collectionVariables.set(\"ISSUER\", \"PYCQNL20ABC\");",
+									"",
+									"let utils = eval(pm.environment.get(\"utils\"))();",
+									"utils.sign.generateSignature(subjectId);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"The transaction has been confirmed\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Signature",
+								"value": "{{SIGNATURE}}",
+								"type": "text"
+							},
+							{
+								"key": "Request-ID",
+								"value": "{{REQUEST_ID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{REQUEST_BODY}}"
+						},
+						"url": {
+							"raw": "{{ISSUER_API_BASE_PATH}}/transactions/{{transactionIdentifier}}/confirm",
+							"host": [
+								"{{ISSUER_API_BASE_PATH}}"
+							],
+							"path": [
+								"transactions",
+								"{{transactionIdentifier}}",
+								"confirm"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fail transaction",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var subjectId = pm.collectionVariables.get(\"cit\");",
+									"var transactionDetails = pm.globals.get(\"transactionDetails\");",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify({",
+									"    reason: \"Money transfer failed\"",
+									"}));",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_PATH\", \"/v2/transactions/\" + pm.variables.get(\"transactionIdentifier\") + \"/fail\");",
+									"pm.collectionVariables.set(\"REQUEST_ID\", \"test_12345\");",
+									"pm.collectionVariables.set(\"ISSUER\", \"PYCQNL20ABC\");",
+									"",
+									"let utils = eval(pm.environment.get(\"utils\"))();",
+									"utils.sign.generateSignature(subjectId);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"The transaction has failed\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Signature",
+								"value": "{{SIGNATURE}}",
+								"type": "text"
+							},
+							{
+								"key": "Request-ID",
+								"value": "{{REQUEST_ID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{REQUEST_BODY}}"
+						},
+						"url": {
+							"raw": "{{ISSUER_API_BASE_PATH}}/transactions/{{transactionIdentifier}}/fail",
+							"host": [
+								"{{ISSUER_API_BASE_PATH}}"
+							],
+							"path": [
+								"transactions",
+								"{{transactionIdentifier}}",
+								"fail"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel transaction",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var subjectId = pm.collectionVariables.get(\"cit\");",
+									"var transactionDetails = pm.globals.get(\"transactionDetails\");",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_BODY\", \"\");",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_PATH\", \"/v2/transactions/\" + pm.variables.get(\"transactionIdentifier\") + \"/cancel\");",
+									"pm.collectionVariables.set(\"REQUEST_ID\", \"test_12345\");",
+									"pm.collectionVariables.set(\"ISSUER\", \"PYCQNL20ABC\");",
+									"",
+									"let utils = eval(pm.environment.get(\"utils\"))();",
+									"utils.sign.generateSignature(subjectId);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"The transaction has been canceled\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Signature",
+								"value": "{{SIGNATURE}}",
+								"type": "text"
+							},
+							{
+								"key": "Request-ID",
+								"value": "{{REQUEST_ID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{REQUEST_BODY}}"
+						},
+						"url": {
+							"raw": "{{ISSUER_API_BASE_PATH}}/transactions/{{transactionIdentifier}}/cancel",
+							"host": [
+								"{{ISSUER_API_BASE_PATH}}"
+							],
+							"path": [
+								"transactions",
+								"{{transactionIdentifier}}",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Release transaction",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var subjectId = pm.collectionVariables.get(\"cit\");",
+									"var transactionDetails = pm.globals.get(\"transactionDetails\");",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_BODY\", \"\");",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_PATH\", \"/v2/transactions/\" + pm.variables.get(\"transactionIdentifier\") + \"/release\");",
+									"pm.collectionVariables.set(\"REQUEST_ID\", \"test_12345\");",
+									"pm.collectionVariables.set(\"ISSUER\", \"PYCQNL20ABC\");",
+									"",
+									"let utils = eval(pm.environment.get(\"utils\"))();",
+									"utils.sign.generateSignature(subjectId);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"The transaction has been released\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Signature",
+								"value": "{{SIGNATURE}}",
+								"type": "text"
+							},
+							{
+								"key": "Request-ID",
+								"value": "{{REQUEST_ID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{REQUEST_BODY}}"
+						},
+						"url": {
+							"raw": "{{ISSUER_API_BASE_PATH}}/transactions/{{transactionIdentifier}}/release",
+							"host": [
+								"{{ISSUER_API_BASE_PATH}}"
+							],
+							"path": [
+								"transactions",
+								"{{transactionIdentifier}}",
+								"release"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "iDEAL Profile",
+			"item": [
+				{
+					"name": "Register New CIT",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var subjectId = _.random(1000000000, 9999999999); // Transient CIT",
+									"",
+									"var maskPattern = \"\\*\\*\\*\\*\\*\\*\"",
+									"var padding = _.random(1000, 9999)",
+									"",
+									"var defaultIban = \"NL44ABCX\" + maskPattern + padding",
+									"var defaultIbanId = \"Wf8ZMCxcK0y10XHEh8jRM4BIRHJ3wvnX\" + padding",
+									"",
+									"var additionalIban = \"NL44ABCY\" + maskPattern + padding",
+									"var additionalIbanId = \"Wf8ZMCxcK0y10XHEh8jRM4BIRHJ3wvnY\" + padding",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify({",
+									"  \"bankAccounts\":[{",
+									"      \"maskedIban\": defaultIban,",
+									"      \"ibanIdentifier\": defaultIbanId",
+									"  },{",
+									"      \"maskedIban\": additionalIban,",
+									"      \"ibanIdentifier\": additionalIbanId",
+									"  }]",
+									"}));",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_PATH\", \"/v2/profiles/new-cit\");",
+									"pm.collectionVariables.set(\"REQUEST_ID\", \"test_12345\");",
+									"pm.collectionVariables.set(\"ISSUER\", \"PYCQNL20ABC\");",
+									"// pm.collectionVariables.set(\"ISSUER\", \"PYCQNL20402\");",
+									"pm.globals.set(\"profileCit\", subjectId);",
+									"",
+									"let utils = eval(pm.environment.get(\"utils\"))();",
+									"utils.sign.generateSignature(subjectId);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Profile has been registered\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"var sessionUrl = pm.response.json().redirectUrl.href;",
+									"pm.sendRequest({",
+									"   url: sessionUrl,",
+									"   method: 'GET',",
+									"   headers: {",
+									"      'content-type': 'application/json'",
+									"   },",
+									"   body: ''",
+									"   }, function (err, response, {cookies}){",
+									"      var jwtAuthToken = cookies.one('auth_token').value;",
+									"      pm.globals.set(\"PM_BFF_AUTH_TOKEN\", \"Bearer \".concat(jwtAuthToken));",
+									"});",
+									"",
+									"var base64Url = sessionUrl.match(/^.*\\/(.*)$/)[1].split('.')[1];",
+									"var words = CryptoJS.enc.Base64.parse(base64Url);",
+									"var jsonPayload = CryptoJS.enc.Utf8.stringify(words);",
+									"pm.globals.set(\"profileId\", JSON.parse(jsonPayload).sub.match(/^PROFILE:(.*)$/)[1]);",
+									"",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Signature",
+								"value": "{{SIGNATURE}}",
+								"type": "text"
+							},
+							{
+								"key": "Request-ID",
+								"value": "{{REQUEST_ID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{REQUEST_BODY}}"
+						},
+						"url": {
+							"raw": "{{ISSUER_API_BASE_PATH}}/profiles/new-cit",
+							"host": [
+								"{{ISSUER_API_BASE_PATH}}"
+							],
+							"path": [
+								"profiles",
+								"new-cit"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register New CIT - Transaction Context",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var subjectId = pm.collectionVariables.get(\"cit\");",
+									"var transactionId = pm.globals.get(\"transactionIdentifier\")",
+									"",
+									"var maskPattern = \"\\*\\*\\*\\*\\*\\*\"",
+									"var padding = _.random(1000, 9999)",
+									"",
+									"var defaultIban = \"NL44ABCX\" + maskPattern + padding",
+									"var defaultIbanId = \"Wf8ZMCxcK0y10XHEh8jRM4BIRHJ3wvnX\" + padding",
+									"",
+									"var additionalIban = \"NL44ABCY\" + maskPattern + padding",
+									"var additionalIbanId = \"Wf8ZMCxcK0y10XHEh8jRM4BIRHJ3wvnY\" + padding",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify({",
+									"  \"transactionId\": transactionId,",
+									"  \"bankAccounts\":[{",
+									"      \"maskedIban\": defaultIban,",
+									"      \"ibanIdentifier\": defaultIbanId",
+									"  },{",
+									"      \"maskedIban\": additionalIban,",
+									"      \"ibanIdentifier\": additionalIbanId",
+									"  }]",
+									"}));",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_PATH\", \"/v2/profiles/new-cit\");",
+									"pm.collectionVariables.set(\"REQUEST_ID\", \"test_12345\");",
+									"pm.collectionVariables.set(\"ISSUER\", \"PYCQNL20ABC\");",
+									"pm.globals.set(\"profileCit\", subjectId);",
+									"",
+									"let utils = eval(pm.environment.get(\"utils\"))();",
+									"utils.sign.generateSignature(subjectId);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Profile has been registered\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"var sessionUrl = jsonData.redirectUrl.href;",
+									"pm.sendRequest({",
+									"   url: sessionUrl,",
+									"   method: 'GET',",
+									"   headers: {",
+									"      'content-type': 'application/json'",
+									"   },",
+									"   body: ''",
+									"   }, function (err, response, {cookies}){",
+									"      var jwtAuthToken = cookies.one('auth_token').value;",
+									"      console.log(jwtAuthToken)",
+									"      pm.globals.set(\"PM_BFF_AUTH_TOKEN\", \"Bearer \".concat(jwtAuthToken));",
+									"});",
+									"",
+									"var base64Url = sessionUrl.match(/^.*\\/(.*)$/)[1].split('.')[1];",
+									"var words = CryptoJS.enc.Base64.parse(base64Url);",
+									"var jsonPayload = CryptoJS.enc.Utf8.stringify(words);",
+									"pm.globals.set(\"profileId\", JSON.parse(jsonPayload).sub.match(/^PROFILE:(.*)$/)[1]);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Signature",
+								"value": "{{SIGNATURE}}",
+								"type": "text"
+							},
+							{
+								"key": "Request-ID",
+								"value": "{{REQUEST_ID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{REQUEST_BODY}}"
+						},
+						"url": {
+							"raw": "{{ISSUER_API_BASE_PATH}}/profiles/new-cit",
+							"host": [
+								"{{ISSUER_API_BASE_PATH}}"
+							],
+							"path": [
+								"profiles",
+								"new-cit"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authenticate (PM)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var subjectId = pm.globals.get(\"profileCit\");",
+									"var transactionId = pm.globals.get(\"transactionIdentifier\")",
+									"",
+									"var maskPattern = \"\\*\\*\\*\\*\\*\\*\"",
+									"var padding = _.random(1000, 9999)",
+									"var referenceId = pm.globals.get(\"referenceId\")",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify({",
+									"    \"target\": \"PROFILE_MANAGEMENT\"",
+									"}));",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_PATH\", \"/v2/profiles/auth-link\");",
+									"pm.collectionVariables.set(\"REQUEST_ID\", \"test_12345\");",
+									"pm.collectionVariables.set(\"ISSUER\", \"PYCQNL20ABC\");",
+									"",
+									"let utils = eval(pm.environment.get(\"utils\"))();",
+									"utils.sign.generateSignature(subjectId);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Profile has been registered\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"var sessionUrl = jsonData.redirectUrl.href;",
+									"pm.sendRequest({",
+									"   url: sessionUrl,",
+									"   method: 'GET',",
+									"   headers: {",
+									"      'content-type': 'application/json'",
+									"   },",
+									"   body: ''",
+									"   }, function (err, response, {cookies}){",
+									"      var jwtAuthToken = cookies.one('auth_token').value;",
+									"      pm.globals.set(\"PM_BFF_AUTH_TOKEN\", \"Bearer \".concat(jwtAuthToken));",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Signature",
+								"value": "{{SIGNATURE}}",
+								"type": "text"
+							},
+							{
+								"key": "Request-ID",
+								"value": "{{REQUEST_ID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{REQUEST_BODY}}"
+						},
+						"url": {
+							"raw": "{{ISSUER_API_BASE_PATH}}/profiles/auth-link",
+							"host": [
+								"{{ISSUER_API_BASE_PATH}}"
+							],
+							"path": [
+								"profiles",
+								"auth-link"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authenticate (new-cit/fast-checkout)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var subjectId = pm.globals.get(\"persistentProfileCit\");",
+									"var transactionId = pm.globals.get(\"transactionIdentifier\")",
+									"",
+									"var maskPattern = \"\\*\\*\\*\\*\\*\\*\"",
+									"var padding = _.random(1000, 9999)",
+									"var payloadUri = pm.globals.get(\"payloadUri\")",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify({",
+									"    \"payloadUri\": payloadUri",
+									"}));",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_PATH\", \"/v2/profiles/authenticate-user\");",
+									"pm.collectionVariables.set(\"REQUEST_ID\", \"test_12345\");",
+									"pm.collectionVariables.set(\"ISSUER\", \"PYCQNL20ABC\");",
+									"",
+									"let utils = eval(pm.environment.get(\"utils\"))();",
+									"utils.sign.generateSignature(subjectId);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Profile has been registered\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Signature",
+								"value": "{{SIGNATURE}}",
+								"type": "text"
+							},
+							{
+								"key": "Request-ID",
+								"value": "{{REQUEST_ID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{REQUEST_BODY}}"
+						},
+						"url": {
+							"raw": "{{ISSUER_API_BASE_PATH}}/profiles/authenticate-user",
+							"host": [
+								"{{ISSUER_API_BASE_PATH}}"
+							],
+							"path": [
+								"profiles",
+								"authenticate-user"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Deprecated iDEAL Profile",
+			"item": [
+				{
+					"name": "Register New Profile",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var subjectId = _.random(1000000000, 9999999999); // Transient CIT",
+									"",
+									"var maskPattern = \"\\*\\*\\*\\*\\*\\*\"",
+									"var padding = _.random(1000, 9999)",
+									"",
+									"var defaultIban = \"NL44ABCX\" + maskPattern + padding",
+									"var defaultIbanId = \"Wf8ZMCxcK0y10XHEh8jRM4BIRHJ3wvnX\" + padding",
+									"",
+									"var additionalIban = \"NL44ABCY\" + maskPattern + padding",
+									"var additionalIbanId = \"Wf8ZMCxcK0y10XHEh8jRM4BIRHJ3wvnY\" + padding",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify({",
+									"  \"defaultBankAccount\": {",
+									"      \"maskedIban\": defaultIban,",
+									"      \"ibanIdentifier\": defaultIbanId",
+									"  },",
+									"  \"additionalBankAccounts\":[{",
+									"      \"maskedIban\": additionalIban,",
+									"      \"ibanIdentifier\": additionalIbanId",
+									"  }]",
+									"}));",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_PATH\", \"/v2/profiles\");",
+									"pm.collectionVariables.set(\"REQUEST_ID\", \"test_12345\");",
+									"pm.collectionVariables.set(\"ISSUER\", \"PYCQNL20ABC\");",
+									"pm.globals.set(\"profileCit\", subjectId);",
+									"",
+									"let utils = eval(pm.environment.get(\"utils\"))();",
+									"utils.sign.generateSignature(subjectId);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Profile has been registered\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"var sessionUrl = pm.response.json().redirectUrl.href;",
+									"pm.sendRequest({",
+									"   url: sessionUrl,",
+									"   method: 'GET',",
+									"   headers: {",
+									"      'content-type': 'application/json'",
+									"   },",
+									"   body: ''",
+									"   }, function (err, response, {cookies}){",
+									"      var jwtAuthToken = cookies.one('auth_token').value;",
+									"      pm.globals.set(\"PM_BFF_AUTH_TOKEN\", \"Bearer \".concat(jwtAuthToken));",
+									"});",
+									"",
+									"var base64Url = sessionUrl.match(/^.*\\/(.*)$/)[1].split('.')[1];",
+									"var words = CryptoJS.enc.Base64.parse(base64Url);",
+									"var jsonPayload = CryptoJS.enc.Utf8.stringify(words);",
+									"pm.globals.set(\"profileId\", JSON.parse(jsonPayload).sub.match(/^PROFILE:(.*)$/)[1]);",
+									"",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Signature",
+								"value": "{{SIGNATURE}}",
+								"type": "text"
+							},
+							{
+								"key": "Request-ID",
+								"value": "{{REQUEST_ID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{REQUEST_BODY}}"
+						},
+						"url": {
+							"raw": "{{ISSUER_API_BASE_PATH}}/profiles",
+							"host": [
+								"{{ISSUER_API_BASE_PATH}}"
+							],
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register New Profile - Transaction Context",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var subjectId = pm.collectionVariables.get(\"cit\");",
+									"var transactionId = pm.globals.get(\"transactionIdentifier\")",
+									"",
+									"var maskPattern = \"\\*\\*\\*\\*\\*\\*\"",
+									"var padding = _.random(1000, 9999)",
+									"",
+									"var defaultIban = \"NL44ABCX\" + maskPattern + padding",
+									"var defaultIbanId = \"Wf8ZMCxcK0y10XHEh8jRM4BIRHJ3wvnX\" + padding",
+									"",
+									"var additionalIban = \"NL44ABCY\" + maskPattern + padding",
+									"var additionalIbanId = \"Wf8ZMCxcK0y10XHEh8jRM4BIRHJ3wvnY\" + padding",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify({",
+									"  \"transactionId\": transactionId,",
+									"  \"defaultBankAccount\": {",
+									"      \"maskedIban\": defaultIban,",
+									"      \"ibanIdentifier\": defaultIbanId",
+									"  },",
+									"  \"additionalBankAccounts\":[{",
+									"      \"maskedIban\": additionalIban,",
+									"      \"ibanIdentifier\": additionalIbanId",
+									"  }]",
+									"}));",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_PATH\", \"/v2/profiles\");",
+									"pm.collectionVariables.set(\"REQUEST_ID\", \"test_12345\");",
+									"pm.collectionVariables.set(\"ISSUER\", \"PYCQNL20ABC\");",
+									"pm.globals.set(\"profileCit\", subjectId);",
+									"",
+									"let utils = eval(pm.environment.get(\"utils\"))();",
+									"utils.sign.generateSignature(subjectId);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Profile has been registered\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"var sessionUrl = jsonData.redirectUrl.href;",
+									"pm.sendRequest({",
+									"   url: sessionUrl,",
+									"   method: 'GET',",
+									"   headers: {",
+									"      'content-type': 'application/json'",
+									"   },",
+									"   body: ''",
+									"   }, function (err, response, {cookies}){",
+									"      var jwtAuthToken = cookies.one('auth_token').value;",
+									"      console.log(jwtAuthToken)",
+									"      pm.globals.set(\"PM_BFF_AUTH_TOKEN\", \"Bearer \".concat(jwtAuthToken));",
+									"});",
+									"",
+									"var base64Url = sessionUrl.match(/^.*\\/(.*)$/)[1].split('.')[1];",
+									"var words = CryptoJS.enc.Base64.parse(base64Url);",
+									"var jsonPayload = CryptoJS.enc.Utf8.stringify(words);",
+									"pm.globals.set(\"profileId\", JSON.parse(jsonPayload).sub.match(/^PROFILE:(.*)$/)[1]);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Signature",
+								"value": "{{SIGNATURE}}",
+								"type": "text"
+							},
+							{
+								"key": "Request-ID",
+								"value": "{{REQUEST_ID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{REQUEST_BODY}}"
+						},
+						"url": {
+							"raw": "{{ISSUER_API_BASE_PATH}}/profiles",
+							"host": [
+								"{{ISSUER_API_BASE_PATH}}"
+							],
+							"path": [
+								"profiles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authenticate (new cit)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var subjectId = pm.globals.get(\"persistentProfileCit\");",
+									"var transactionId = pm.globals.get(\"transactionIdentifier\")",
+									"",
+									"var maskPattern = \"\\*\\*\\*\\*\\*\\*\"",
+									"var padding = _.random(1000, 9999)",
+									"var referenceId = pm.globals.get(\"referenceId\")",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify({",
+									"    \"reason\": \"ADD_CIT_TO_PROFILE\",",
+									"    referenceId",
+									"}));",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_PATH\", \"/v2/profiles/authenticate\");",
+									"pm.collectionVariables.set(\"REQUEST_ID\", \"test_12345\");",
+									"pm.collectionVariables.set(\"ISSUER\", \"PYCQNL20ABC\");",
+									"",
+									"let utils = eval(pm.environment.get(\"utils\"))();",
+									"utils.sign.generateSignature(subjectId);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Profile has been registered\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Signature",
+								"value": "{{SIGNATURE}}",
+								"type": "text"
+							},
+							{
+								"key": "Request-ID",
+								"value": "{{REQUEST_ID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{REQUEST_BODY}}"
+						},
+						"url": {
+							"raw": "{{ISSUER_API_BASE_PATH}}/profiles/authenticate",
+							"host": [
+								"{{ISSUER_API_BASE_PATH}}"
+							],
+							"path": [
+								"profiles",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authenticate (fast checkout)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var subjectId = pm.globals.get(\"persistentProfileCit\");",
+									"var transactionId = pm.globals.get(\"transactionIdentifier\")",
+									"",
+									"var maskPattern = \"\\*\\*\\*\\*\\*\\*\"",
+									"var padding = _.random(1000, 9999)",
+									"var referenceId = pm.globals.get(\"referenceId\")",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify({",
+									"    \"reason\": \"RECOGNIZE_PROFILE_BY_CIT\",",
+									"    referenceId",
+									"}));",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_PATH\", \"/v2/profiles/authenticate\");",
+									"pm.collectionVariables.set(\"REQUEST_ID\", \"test_12345\");",
+									"pm.collectionVariables.set(\"ISSUER\", \"PYCQNL20ABC\");",
+									"",
+									"let utils = eval(pm.environment.get(\"utils\"))();",
+									"utils.sign.generateSignature(subjectId);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Profile has been registered\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Signature",
+								"value": "{{SIGNATURE}}",
+								"type": "text"
+							},
+							{
+								"key": "Request-ID",
+								"value": "{{REQUEST_ID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{REQUEST_BODY}}"
+						},
+						"url": {
+							"raw": "{{ISSUER_API_BASE_PATH}}/profiles/authenticate",
+							"host": [
+								"{{ISSUER_API_BASE_PATH}}"
+							],
+							"path": [
+								"profiles",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authenticate (PM)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var subjectId = pm.globals.get(\"persistentProfileCit\");",
+									"var transactionId = pm.globals.get(\"transactionIdentifier\")",
+									"",
+									"var maskPattern = \"\\*\\*\\*\\*\\*\\*\"",
+									"var padding = _.random(1000, 9999)",
+									"var referenceId = pm.globals.get(\"referenceId\")",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify({",
+									"    \"reason\": \"PROFILE_MANAGEMENT\"",
+									"}));",
+									"",
+									"pm.collectionVariables.set(\"REQUEST_PATH\", \"/v2/profiles/authenticate\");",
+									"pm.collectionVariables.set(\"REQUEST_ID\", \"test_12345\");",
+									"pm.collectionVariables.set(\"ISSUER\", \"PYCQNL20ABC\");",
+									"",
+									"let utils = eval(pm.environment.get(\"utils\"))();",
+									"utils.sign.generateSignature(subjectId);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Profile has been registered\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"var sessionUrl = jsonData.redirectUrl.href;",
+									"pm.sendRequest({",
+									"   url: sessionUrl,",
+									"   method: 'GET',",
+									"   headers: {",
+									"      'content-type': 'application/json'",
+									"   },",
+									"   body: ''",
+									"   }, function (err, response, {cookies}){",
+									"      var jwtAuthToken = cookies.one('auth_token').value;",
+									"      console.log(jwtAuthToken)",
+									"      pm.globals.set(\"PM_BFF_AUTH_TOKEN\", \"Bearer \".concat(jwtAuthToken));",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Signature",
+								"value": "{{SIGNATURE}}",
+								"type": "text"
+							},
+							{
+								"key": "Request-ID",
+								"value": "{{REQUEST_ID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{REQUEST_BODY}}"
+						},
+						"url": {
+							"raw": "{{ISSUER_API_BASE_PATH}}/profiles/authenticate",
+							"host": [
+								"{{ISSUER_API_BASE_PATH}}"
+							],
+							"path": [
+								"profiles",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"postman.setEnvironmentVariable(\"utils\", () => {",
+					"    var generateSignature = (config) => {",
+					"        pm.sendRequest({",
+					"            url: pm.variables.get(\"JWS_GENERATOR_URL\") + '/jws-generate/ideal',",
+					"            method: 'POST',",
+					"            header: {",
+					"                'content-type': 'application/json'",
+					"            },",
+					"            body: {",
+					"                mode: 'raw',",
+					"                raw: JSON.stringify(config)",
+					"            }",
+					"        }, function (err, response) {",
+					"            console.log(`Signature: ${response.text()}`);",
+					"            pm.collectionVariables.set(\"SIGNATURE\", response.text());",
+					"        });",
+					"    }",
+					"",
+					"    var generateSignatureForIssuer = (issuerId) => {",
+					"        let path = pm.variables.get(\"REQUEST_PATH\");",
+					"        pm.collectionVariables.set(\"PATH\", path)",
+					"        let config = {",
+					"            payload: pm.variables.get(\"REQUEST_BODY\"),",
+					"            kid: \"es.signature.acc.2024\",",
+					"            requestId: pm.variables.get(\"REQUEST_ID\"),",
+					"            sub: issuerId,",
+					"            path: pm.variables.get(\"PATH\"),",
+					"            issuer: pm.variables.get(\"ISSUER\")",
+					"        };",
+					"        generateSignature(config);",
+					"    }",
+					"",
+					"    return {",
+					"        sign: {",
+					"            generateSignature: generateSignatureForIssuer",
+					"        }",
+					"    };",
+					"});"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "issuerId",
+			"value": ""
+		},
+		{
+			"key": "REQUEST_BODY",
+			"value": ""
+		},
+		{
+			"key": "REQUEST_PATH",
+			"value": ""
+		},
+		{
+			"key": "REQUEST_ID",
+			"value": ""
+		},
+		{
+			"key": "ISSUER",
+			"value": ""
+		},
+		{
+			"key": "PATH",
+			"value": ""
+		},
+		{
+			"key": "SIGNATURE",
+			"value": ""
+		},
+		{
+			"key": "cit",
+			"value": ""
+		},
+		{
+			"key": "PM_BFF_AUTH_TOKEN",
+			"value": ""
+		},
+		{
+			"key": "profileCit",
+			"value": ""
+		},
+		{
+			"key": "ISSUER_API_BASE_PATH",
+			"value": "https://acc.profile.ideal.nl"
+		}
+	]
+}
