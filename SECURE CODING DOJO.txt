@@ -1,0 +1,99 @@
+SECURE CODING DOJO
+
+STEPS
+
+Update config.json in training portal directory after getting mysql credentials - DONE
+Run genLocalUser in tools/encryptConfigs.js by commenting out the block of code before `construct = crypto` line -
+Update localUsers.json -
+Update localUsersPath variable in trainingportal/config.json after commenting out the genLocalUser function in encryptConfigs.js - 
+Generate encDbPass from encryptConfigs.js -
+Run setup-basic.sh - 
+Run run-basic.sh - 
+
+## GENERATE SELF-SIGNED CERTS
+openssl genrsa -out private_key.pem 2048
+openssl req -new -key private_key.pem -out csr.pem
+openssl x509 -req -days 365 -in csr.pem -signkey private_key.pem -out certificate.pem
+openssl pkcs12 -export -in certificate.pem -inkey private_key.pem -out certificate.p12
+
+challenge pwd: abcdef
+
+
+
+openssl pkcs12 -export -in app2.crt -inkey app2.key -out keystore.p12 -name tomcat
+keytool -importkeystore -srckeystore keystore.p12 -srcstoretype PKCS12 \
+        -destkeystore keystore.jks -deststorepass changeit
+
+
+
+sudo mount /dev/sec_teamvg/sec_lv /mnt/extra_space/
+
+
+APACHE SERVER
+sudo service apache2 restart
+
+ tail -f /var/log/apache2/error.log
+
+Sudo chown -R www-data:www-data /var/lib/letsencrypt 
+sudo chmod 755 /var/lib/letsencrypt
+sudo chmod 755 /var/lib/letsencrypt/http_challenges 
+
+
+/etc/apache2/apache2.conf 
+
+udo chown -R www-data:www-data .well-known/*
+
+
+Put letsencrypt files here: /var/lib/letsencrypt/http_challenges  change the owner to  www-data:www-data
+
+RENEWAL: sudo certbot certonly --manual -v
+
+Successfully received certificate.
+Certificate is saved at: /etc/letsencrypt/live/securitylab.payconiq.com/fullchain.pem
+Key is saved at:         /etc/letsencrypt/live/securitylab.payconiq.com/privkey.pem
+This certificate expires on 2025-07-27.
+These files will be updated when the certificate renews.
+
+
+/etc/apache2/sites-available/securitylab.payconiq.com.conf
+
+
+LABS
+Security Code Review Ninja
+Green Belt
+Black Belt
+
+
+12 password length should be 12. 
+
+Instruction code
+Playbook/Video 
+
+Salt code to  OWASP
+Generate challenge code
+
+
+
+
+Six tables: 
+Install docker
+Git clone
+
+ENV SSL_CERT_FILE=/etc/ssl/certs/seclab.crt
+ENV SSL_KEY_FILE=/etc/ssl/private/seclab.key
+
+
+
+=====
+Share weekly updates
+Duration: one month - 2 months
+Playbook: Number of labs / duration 
+Find out the time slot as per hour(s)
+Mandatory labs 
+Name of developers
+
+Why?
+-Audit requirement
+
+
+

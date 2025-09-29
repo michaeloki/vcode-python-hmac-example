@@ -1,0 +1,210 @@
+MARIADB
+
+The issue : org.mariadb.jdbc IS in the source but org.gjt.mm.mysql.Driver is in database.properties
+
+
+================REMEDY==+++++++++++++++++++++++=========
+Upload the war file to GitHub
+Permission  fix with chown
+Restart tomcat and mariadb 
+Edit the database.properties file inside the conf directory 
+
+ sh /usr/local/tomcat-9.0.98/bin/startup.sh 
+
+
+sudo chown -R michaeloki:  /usr/local/tomcat-9.0.98/work/
+
+
+mysql.server start
+============LOCAL DB ============
+
+
+sudo update-alternatives --config java
+
+readlink -f $(which java)
+
+#WILDFLY SETUP COMMANDS
+sudo systemctl edit wildfly
+sudo systemctl daemon-reexec
+sudo systemctl restart wildfly
+
+sudo update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+sudo -u wildfly java -version
+sudo -u wildfly /opt/wildfly/bin/add-user.sh
+
+sudo nano /etc/systemd/system/wildfly.service - change JDK here
+
+sudo update-alternatives --install /usr/bin/java java /path/to/new/java 100
+
+
+For troubleshooting, check localhost.2025-xx-xx.log
+
+
+=================+++++++++++++++++++===================++++++++++++
+
+On EC2 the issue is: http-nio-8080-exec-9 dbProcs.Database - Unable to create database connection: java.lang.ClassNotFoundException: =org.mongodb.driver
+
+Security Shepherd Troubleshooting
+
+1.
+Problem
+On EC2, the mongodriver [org.mongodb.driver] is not in the pom.xml file.
+Solution
+Add this to pom.xml and upload the war file to github and pull it from there
+Restart the tomcat server
+
+
+2.
+Problem
+Locally, the database.properties file can't be found by the application.
+Solution
+Ensure the file exists, then grant permission to tomcat. Make tomcat the owner of the parent directory of the conf directory.
+Restart the mariadb and tomcat server 
+
+
+Check atempted SQL connections
+
+
+
+
+======18.03.2025=========
+Clear cache
+Install Wildfly if step 1 fails after the new deployment
+
+
+===ON MACBOOK========== 
+mysql.server status
+mysql.server start
+
+mvn clean install -DskipTests 
+
+mvn clean install
+
+mvn spring-boot:run
+
+To start WildFly server
+Go to /Users/xyz/wildfly/
+./jboss-cli.sh - - connect command=:shutdown
+
+
+
+
+LOCAL MARIADB ON MARIADB
+
+CREATE USER ‘root'@'localhost' IDENTIFIED BY ‘…...';
+SELECT User, Host FROM mysql.user;
+
+MARIADB 10+
+SELECT User, Host FROM mysql.global_priv;
+
+SELECT User, Host FROM mysql.global_priv;
+
+
+
+
+
+
+
+
+
+
+
+sudo nano /etc/systemd/system/mariadb.service 
+
+sudo systemctl restart tomcat
+
+
+systemctl status mariadb.service
+
+sudo systemctl restart mariadb
+
+sudo mariadb -u root -p
+
+sudo mariadb -u xxx_yyy -p
+
+
+/opt/tomcat/latest/webapps
+
+
+***MariaDB Database Config
+sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf                                    ::bind-address can be changed here 
+
+
+LOGGING 
+/var/log/mysql/mysql.log
+
+/opt/tomcat/apache-tomcat-8.5.93/conf/database.properties
+
+ sudo chown tomcat:tomcat /opt/tomcat/apache-tomcat-8.5.93/conf/database.properties
+
+Unable to create database connection: java.lang.ClassNotFoundException
+
+sudo tail -n 20 tomcat.log
+
+
+
+CREATE USER WITH ADMIN PRIVILEGES 
+
+
+
+CREATE USER ’'@'localhost' IDENTIFIED BY '’;
+
+
+
+
+Tomcat DB Config
+/opt/tomcat/latest/conf/database.properties —— location
+
+
+
+/etc/systemd/system/mariadb.service
+
+
+mariadb is in /usr/bin/mariadb 
+
+
+Change the AMI 
+
+
+JAVA
+/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
+
+
+159455cd-022f-45fa-b8d8-7f7851cfc06f
+
+
+<Context>
+    <Resource name="jdbc/SecurityShepherdDB"
+              auth="Container"
+              type="javax.sql.DataSource"
+              maxTotal="100"
+              maxIdle="30"
+              maxWaitMillis="10000"
+              username=""
+              password=""
+              driverClassName="com.mysql.jdbc.Driver"
+              url="jdbc:mysql://localhost:3306/securityshepherd"/>
+</Context>
+
+
+
+
+
+================TO DO
+Run the mongoShema js file
+Redeploy the war file
+Run Tomcat
+
+
+MONGO ON MACBOOK
+
+brew services start mongodb-community@8.0
+
+
+
+brew services start mongodb-community
+
+
+brew services status mongodb-community
+
+======

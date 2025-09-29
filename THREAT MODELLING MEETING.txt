@@ -1,0 +1,27 @@
+THREAT MODELLING MEETING
+
+
+
+
+1. "What are the key assets in our payment API that we need to protect?"
+2. "Who are the potential threat actors targeting payment APIs and what are their motivations?"
+3. "What are the most likely attack vectors for payment APIs, such as injection or exploitation of vulnerabilities?"
+4. "What are the current security measures in place, such as encryption, authentication, and access controls?"
+5. "What are the potential vulnerabilities and risks, such as insufficient input validation or broken access controls?"
+6. "What are the legal and regulatory requirements for payment API security, such as PCI DSS?"
+7. "What is the risk appetite and tolerance for this payment API project?"
+8. "What security metrics will we use to measure the payment API's success, such as the number of security incidents?"
+9. "What are the constraints and assumptions for this payment API threat model, such as integration with third-party systems?"
+10. "How will we validate and verify the payment API threat model, such as through code review and penetration testing?”
+
+
+Gitlab****
+CS-2589
+Ideal-paymentpage-bff-api
+
+Profile-management-bff-api
+
+
+Test it in acc environment.
+
+Authentication test***

@@ -1,0 +1,43 @@
+WILDFLY INSTALLATION
+
+
+wget https://github.com/wildfly/wildfly/releases/download/35.0.1.Final/wildfly-35.0.1.Final.tar.gz
+sudo tar -xvzf wildfly-35.0.1.Final.tar.gz -C /opt
+cd /opt
+sudo mv wildfly-35.0.1.Final /opt/wildfly
+
+
+9c0eb471-ab71-4613-812a-7e762dd03fd
+
+
+VERACODE FIX suggestion
+
+Name of the file uplload library 
+
+Convert the defective PDF file to another 
+
+
+===== MACBOOK =====
+brew --prefix wildfly-as 
+
+/opt/homebrew/opt/wildfly-as/libexec/bin
+
+cd $(brew --prefix wildfly-as)/libexec/bin
+
+
+/usr/standalone
+
+cd /path/to/wildfly/bin
+./standalone.sh
+./jboss-cli.sh —connect
+deploy /dir/.war
+deployment-info
+ls deployment
+# Replace existing deployment ==>> deploy /path/to/myapp.war —force 
+# Deploy in domain mode ==>> deploy /path/to/myap.war —server-groups=main-server-group 
+# Access the deployed app ==>> deployment-info 
+# Undeploy undeploy myapp.war
+ 
+
+
+WILDFLY

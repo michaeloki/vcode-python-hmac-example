@@ -1,0 +1,62 @@
+TROUBLESHOOTING_CICD
+
+Error 400 for image-scan
+Pipeline link: https://gitlab.payconiq.io/sec/veracode-integration/-/jobs/2037712 
+Go to https://dms.payconiq.io/api/v2/doc/ and check import-scan example
+
+
+This::: https://gitlab.payconiq.io/sec/veracode-integration/-/pipelines/262023 could have failed due to mvn issue.
+
+If the command is not working, possible reasons could be:
+   - Maven is not installed or not in the system path.
+   - The Java Development Kit (JDK) is not installed.
+   - The project's pom.xml file is missing or inaccessible.
+   - Incorrect syntax or options are used in the command.
+
+
+FIRST ISSUE (internal dependency)
+1. Initial suspicion, no report file was uploaded to DD.
+The pom.xml file of the Java project is faulty. If mvn also failed locally
+
+
+Recommendation::::
+Add mvn and JDK check - INSTALLED
+Run the mvn command in the repo to confirm the dependencies are fine. - DONE (All clear) mvn 3.9, but the server has MVN 3.6 and JDK version 11.
+Check the version of the mvn and JDK on the server - DONE
+Rewrite the mvn syntax - 
+Add a file size check to DD upload - 
+
+SECOND ISSUE (image-scan)
+Add a print statement to the REPORT_FILE var and confirm it exists - PENDING TESTING
+Print the full xml report of the - IMAGE_SCAN calls dd_import_report api/v2/import-scan/
+Check downloadVcReport of codeAnalysis.sh by adding a print statement for $report_response
+Check what’s wrong with DD v2 API online by findings examples of Get Findings import report call.
+
+
+
+Missing security scan pipeline fix by QA : #431965  - https://gitlab.payconiq.io/DEV/ideal/processing/ideal-profile-sweeper-job/-/pipelines/431965 
+
+If there’s no file to upload in the analysis phase, skip defect dojo scaN
+iN THE internal_dependencies file: Once there’s no need for scan write to a file and read this in the defect dojo sast stage and skip
+
+
+
+**** If internal_dep returns 400, skip  image_scan’s API call and  return exit 0.
+
+
+#432534 - 
+
+ideal-payment-page-bff-service : Unknown project type. processing/ideal-payment-page-bff-service[gl884]
+
+Error 403 was discovered at  https://analysiscenter.veracode.com/api/5.0/detailedreport.do 
+
+Maven is installed and the version is Apache Maven 3.6.3
+940Maven home: /usr/share/maven
+941Java version: 11.0.16, vendor: Debian, runtime: /usr/lib/jvm/java-11-openjdk-amd64
+942Default locale: en_US, platform encoding: ANSI_X3.4-1968
+943OS name: "linux", version: "5.10.209-198.812.amzn2.x86_64", arch: "amd64", family: "unix"
+944openjdk version "11.0.16" 2022-07-19
+945OpenJDK Runtime Environment (build 11.0.16+8-post-Debian-1deb11u1)
+946OpenJDK 64-Bit Server VM (build 11.0.16+8-post-Debian-1deb11u1, mixed mode, sharing)
+
+

@@ -1,0 +1,28 @@
+WERO KEY ATTESTATION RECOMMENDATION
+
+
+https://developer.apple.com/documentation/devicecheck/establishing-your-app-s-integrity#overview 
+
+https://www.appsealing.com/app-attestation/ 
+
+FIDO Authentication
+
+
+
+
+SOLUTION TO THE KEY ATTESTATION CHALLENGE ISSUE
+
+To prevent an Android phone from sending a User-Agent string that mimics an iOS, you can implement several measures on the server-side:
+
+User-Agent validation: Check the User-Agent string for inconsistencies and ensure it matches the expected format for the device type. If the User-Agent string appears suspicious or does not match the expected format, you can flag the request for further inspection or block it.
+
+Client-side certificates: Implement client-side certificates to authenticate the client. This way, the server can verify the client's identity and ensure that the request is coming from a legitimate device.
+
+Device fingerprinting: Create a unique device fingerprint based on various device attributes, such as screen size, OS version, and other device-specific information. If the device fingerprint does not match the expected pattern for the device type, you can flag the request for further inspection or block it.
+
+Use additional checks: Implement additional checks, such as checking the IP address or the device's geolocation, to ensure that the request is coming from a legitimate device.
+
+Implement a robust API gateway: Use an API gateway that can detect and block requests with suspicious headers or behavior.
+
+
+

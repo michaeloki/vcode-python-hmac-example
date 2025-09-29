@@ -1,0 +1,27 @@
+CVD PROGRAM
+
+Title: Coordinated Vulnerability Disclosure Program
+
+1. Introduction
+We value the security of our payment gateway and encourage responsible disclosure of vulnerabilities. This program outlines the guidelines for reporting potential security issues.
+
+2. Scope
+This program covers all systems and services provided by our payment gateway company.
+
+3. Reporting a Vulnerability
+- Describe the vulnerability clearly and concisely.
+- Include steps to reproduce and any relevant logs or screenshots.
+- Do not exploit the vulnerability or disclose it to others.
+
+4. Our Commitment
+- We will acknowledge receipt of your report within 3 business days.
+- We will keep you informed of the progress and resolution.
+- We will not take legal action against you if you follow this policy.
+
+5. Disclosure
+Once the issue is resolved, we will disclose the vulnerability and our response to the reporter.
+
+6. Contact
+Please send reports to [security@paymentgateway.com](mailto:security@paymentgateway.com)
+
+This program is subject to change without notice.

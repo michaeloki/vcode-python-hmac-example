@@ -1,0 +1,39 @@
+Kubernetes Security Hardening
+
+Scanning of containers and pods for vulnerabilities or misconfigurations: Check this
+Implement the least privilege principle: Confirm this
+Network separation/firewalls: Check this
+Strong authentication: How to____
+Log auditing: Confirm this
+
+
+
+
+
+When discussing CIS benchmarking for Kubernetes hardening, a cybersecurity expert should consider several key factors: 
+ 1. Compliance: Ensuring that the Kubernetes environment meets the relevant security standards and regulations, such as the CIS Benchmarks for Kubernetes.
+
+ 2. Network security: Implementing secure network policies, such as restricting access to the Kubernetes API and enabling encryption for communication between nodes.
+
+ 3. Container security: Ensuring that containers are properly configured and isolated, and that they do not contain vulnerabilities or malicious code.
+
+ 4. Pod security: Implementing security policies for pods, such as restricting the use of privileged containers and limiting the capabilities of containers. 
+
+5. Node security: Securing the underlying infrastructure, such as the host operating system and hardware, to prevent attacks on the Kubernetes nodes. 
+
+6. Identity and access management: Implementing strong authentication and authorization mechanisms to ensure that only authorized users and services can access the Kubernetes environment. 
+
+7. Monitoring and logging: Setting up monitoring and logging systems to detect and respond to security incidents, and to maintain an audit trail of all activities in the Kubernetes environment. 
+
+8. Continuous monitoring: Regularly reviewing and updating the security policies and configurations to ensure that they remain effective and up-to-date with the latest threats and vulnerabilities.
+
+ 9. Incident response: Having a well-defined incident response plan in place to quickly and effectively respond to security incidents, and to minimize the impact of any potential breaches. 10. Training and education: Providing regular training and education to the Kubernetes users and administrators to ensure that they are aware of the latest security threats and best practices.
+
+
+# Quantity of the severity per project
+# Cases - based on the numbers and the repo names + business criticality
+# Get the tags for the projects(s) and consider it in the rule engine
+
+
+
+
