@@ -1,0 +1,38 @@
+YASU CLOUD
+
+
+Add "NoEcho": true to sensitive parameters (YasuID, YasuHandshakeID, YasuIamRole).
+
+Minimize IAM policy permissions by limiting actions and specifying required resources instead of "Resource": "*".
+
+Review bucket access for overly broad permissions and ensure strict control for external services.
+
+Verify data retention policies for S3 bucket lifecycle configuration.
+
+Double-check the uniqueness of ExternalId for enhanced security.
+
+
+
+
+
+
+
+1. Sensitive Parameters
+
+The parameters YasuID, YasuHandshakeID, and YasuIamRole are sensitive identifiers but have no explicit NoEchoproperty. Setting NoEcho to true ensures their values are not displayed in plaintext in logs or in the AWS Management Console.
+
+2. IAM Role Policy
+
+The CrossAccountRole has a policy allowing a broad set of actions (pricing:*, ce:Get*, etc.) on all resources ("Resource": "*") for the YasuBillingReadOnly statement. Consider scoping down the resources to the minimum required set to follow the principle of least privilege.
+
+3. S3 Bucket Access
+
+Public access to the CostandUsageReportBucket is well-blocked with the PublicAccessBlockConfiguration. That's great! However, verify that any external service (such as billingreports.amazonaws.com) accessing your bucket does so with the least necessary permissions.
+
+4. S3 Bucket Lifecycle
+
+The lifecycle configuration expires objects after 200 days, which may not align with your organization's data retention policy. Ensure this configuration aligns with your business and compliance requirements.
+
+5. Cross-Account Role Trust Policy
+
+The AssumeRolePolicyDocument includes a condition based on sts:ExternalId. This is good for protecting against confused-deputy attacks. Ensure the ExternalId is unique per customer or partner.

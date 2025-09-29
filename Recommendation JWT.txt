@@ -1,0 +1,9 @@
+Recommendation JWT
+
+Don’t store the nonce on the front-end (cookie or local storage). Put it on the server.
+Use a cryptograhic library to generate random nonce for each request.
+Validate the issuer and audience in the JWT header.
+Reduce the life span oif the token to reduce the chances of a breach.
+
+
+One popular alternative to JSON Web Tokens (JWTs) is PASETO (Platform Agnostic Security Token). It's designed to address the security concerns associated with JWTs. PASETO provides a more robust and secure method for token-based authentication. It uses the Authenticated Encryption with Associated Data (AEAD) algorithm, which makes it harder to tamper with the token without the server’s secret key.

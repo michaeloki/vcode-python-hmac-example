@@ -1,0 +1,37 @@
+TODO —DEPLOY
+
+
+Uncomment the load_env in api.py and socket.py and test it again
+
+If it works
+
+remove hardcoded variables 
+
+push the code 
+
+
+
+===== Edit nginx.conf on EC2 and remove the default NGINX file
+
+
+Add chapter 8 crypto 
+
+TEST ACC 
+
+
+Create a service that will automatically check if the local_socket_dockerise.sh exists in the deployments folder , then run /home/ec2-user/restart_prod.sh
+Start the two docker ci
+
+### restart_prod.sh
+
+#!/bin/bash
+echo “Starting the docker containers and NGINX”
+cd /home/ec2-user/deploymentts
+if [ -f  “local_socket_dockerise.sh” ]; then 
+
+docker run -d --name $SOCKET_CONTAINER_NAME -p $SEC_HOST_PORT:$SEC_SOCK_CONT_PORT $SEC_SOCKET_SRV_IMAGE
+docker network create $SEC_PIP_DOCKET_NETWORK_NAME
+docker network connect $SEC_PIP_DOCKET_NETWORK_NAME $SOCKET_CONTAINER_NAME
+echo "List of containers connected to $SEC_PIP_DOCKET_NETWORK_NAME "
+docker network inspect -f '{{json .}}' $SEC_PIP_DOCKET_NETWORK_NAME | jq -r '.Containers[] | .Name'
+docker ps

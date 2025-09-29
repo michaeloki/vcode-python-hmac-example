@@ -1,0 +1,49 @@
+TOMCAT INSTALLATION ON MAC
+
+java -version
+
+tar -xzvf /path/to/downloaded/tomcat-11.x.x.tar.gz
+
+sudo mv /path/to/extracted/tomcat-11.x.x /usr/local/tomcat-11.x.x
+
+cd /usr/local/tomcat-11.x.x/bin
+chmod +x *.sh
+
+cd /usr/local/tomcat-9.x.x/bin
+chmod +x *.sh
+
+./startup.sh
+
+./shutdown.sh
+
+15/5
+
+CREATE USER 'admin'@'%' IDENTIFIED BY 'password'; GRANT ALL PRIVILEGES ON *.* TO 'admin'@'%'; FLUSH PRIVILEGES; 
+
+
+wget https://archive.apache.org/dist/tomcat/tomcat-8/v8.5.99/bin/apache-tomcat-8.5.99.tar.gz
+
+
+
+To install a corresponding JRE for Corretto JDK 19.0.2, you can download the Corretto JRE from the official Amazon Corretto website.
+
+Here are the steps:
+Go to the Corretto download page (Note: I am not allowed to add links)
+Click on the "Download" button for the Corretto JRE package corresponding to your operating system (MacOS in your case).
+Choose the version 19.0.2 and click on the download link.
+Once the download is complete, run the installer and follow the prompts to install the Corretto JRE.
+The Corretto JRE should be installed in a directory such as /Library/Java/JavaVirtualMachines/corretto-19/ (this may vary depending on your system configuration).
+
+ROOT
+
+ROOT.war
+
+docs
+
+examples
+
+host-manager
+
+manager
+
+mongoSchema.js

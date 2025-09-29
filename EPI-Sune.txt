@@ -1,0 +1,13 @@
+EPI: Sune
+
+
+
+
+./scripts/vc_report.sh "$key_id" "$secret”
+
+
+Lack of Access Control: IP address can be used as a form of access control. Disabling it may allow any user to access the session, increasing the risk of unauthorized access.
+Inability to Track User Activity: IP addresses can help track user activity. Disabling it can make it difficult to trace malicious activities or errors back to a specific user.
+Insecure Communication: IP addresses are used to establish secure communication channels. Disabling it might expose the session to man-in-the-middle attacks or eavesdropping.
+Ineffective Firewall Rules: Firewalls often use IP addresses to filter traffic. Disabling it can make the firewall rules ineffective, exposing the system to potential attacks.
+Network Service Disruption: Some network services rely on IP addresses for operation. Disabling it might disrupt these services, causing network performance issues or even complete service outages.
