@@ -1,0 +1,68 @@
+HARD-BLOCK SETUP	
+
+Add  authentication to the API — DONE
+Install git on EC2 — DONE
+**** Generate self-signed certificate — DONE
+Install nginx — DONE
+Install self-signed certificate on nginx — 
+**** Configure CI/CD pipeline — 
+Add the CURL request to cleanup.sh — IN PROGRESS
+**** SRE ticket - DONE
+
+
+SRE ticket - DONE
+Knowbe4 GDPR - DONE
+
+
+
+Take down request- Alibaba/Google
+
+*Report - Google and Bing - submitted
+*AWS config and deployment - TO DO
+*SRE ticket : Mattheus**** ——
+*MDM - Google account profile + Apple account:::: follow-up with M. M
+*L1 control - done
+
+
+
+OS Patch management link for (b)
+
+Say (a) doesn’t exist
+
+(c) screenshots
+
+
+
+
+The goal of the JSON object is to make it visible to developers in their pipelines without clicking on the security pipeline link.
+Change the security template yaml file by removing the allow-failure or setting to false in a forked repo
+Modify a dev project and call the forked sec template file.
+Create a test branch on the sec pipeline and change severity score to 2 instead of 3 AND ensure the app-name=“<a-specific-dev-project>” 
+Confirm the dev pipeline fails even without a dependency (only* needs keywords) change
+
+MAIN hard-block
+(1) Setup the backend : nginx , uswgi,  SSL, and CI/CD SETUP
+Add the CURL request to clean.sh (confirm this always works via an echo stmt)
+Confirm the API responds by printing the JSON response.
+(2)
+**** Add the CURL request to the sec template in a forked repo
+Call the sec template in a specific dev project
+Check if the response from the server is being processed.
+
+Improvement
+Setup a mail server on EC2
+Send a mail to security@payconiq.com IF there is a severe vulnerability 
+
+
+
+
+#### SERVER ADMIN
+if [ -e /var/run/nginx.pid ]; then echo "nginx is running"; fi -CHEKC IF NGINX IS up
+
+
+
+
+
+
+
+For Kubernetes pods to receive API responses from external APIs,  use the Kubernetes service abstraction to expose your application running in a pod to external services. Typically, this is done using either a NodePort, LoadBalancer, or an Ingress resource. Once exposed, your Kubernetes pod can make HTTP/HTTPS requests to external APIs and receive their responses.
