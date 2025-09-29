@@ -1,0 +1,8 @@
+
+
+CREATE USER 'newusername'@'localhost' IDENTIFIED BY 'userpassword';
+
+
+
+USE mysql;
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'AS3dtQLmpXqNWuGJ';
